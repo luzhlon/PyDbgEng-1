@@ -46,19 +46,23 @@ and if set minorHash is False, you will get crashInfo['bucket']like this:
 2. When target process is multiprocess like chrome and IEx64, you should set mode to 'M' which is equal to Multiprocess, and 
 when target process is singleprocess like firefox, you should set mode to 'S' whick is equal to Singleprocess.
 
+
 3. You can set trace to one folder to save crash info which name like this:
 
 > PROBABLY_NOT_EXPLOITABLE_ReadAVNearNull_0x76da4b51.crash
 
+
 4. crashInfo['description which is in crash file like this:
 
-	INSTRUCTION_ADDRESS:0x000007fabd1c96e1
-	INVOKING_STACK_FRAME:0
-	DESCRIPTION:Read Access Violation near NULL
-	SHORT_DESCRIPTION:ReadAVNearNull
-	CLASSIFICATION:PROBABLY_NOT_EXPLOITABLE
-	BUG_TITLE:Read Access Violation near NULL starting at MSHTML!DllCanUnloadNow+0x01 (Hash=0x76da4b51.0x429cabbb)
-	EXPLANATION:This is a user mode read access violation near null, and is probably not exploitable.
+```Python
+INSTRUCTION_ADDRESS:0x000007fabd1c96e1
+INVOKING_STACK_FRAME:0
+DESCRIPTION:Read Access Violation near NULL
+SHORT_DESCRIPTION:ReadAVNearNull
+CLASSIFICATION:PROBABLY_NOT_EXPLOITABLE
+BUG_TITLE:Read Access Violation near NULL starting at MSHTML!DllCanUnloadNow+0x01 (Hash=0x76da4b51.0x429cabbb)
+EXPLANATION:This is a user mode read access violation near null, and is probably not exploitable.
+```
 
 # Versions
 
