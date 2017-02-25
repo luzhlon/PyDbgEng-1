@@ -4,7 +4,7 @@
 from setuptools import setup, find_packages
 setup(
     name='PyDbgEng3',
-    version="0.0.2",
+    version="0.0.3",
     description='A Python Wrapper For Microsoft Debug Engine',
     author='Walkerfuz',
     author_email='walkerfuz#outlook.com',
