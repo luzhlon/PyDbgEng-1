@@ -1,6 +1,11 @@
-# About
+# PyDbgEng
+
+[![](https://img.shields.io/github/forks/walkerfuz/PyDbgEng.svg)](https://github.com/walkerfuz/PyDbgEng/network) 
+[![](https://img.shields.io/github/stars/walkerfuz/PyDbgEng.svg)](https://github.com/walkerfuz/PyDbgEng/stargazers)
 
 PyDbgEng is a python wrapper of debug engines on windows, linux or osx, it's only aim to auto fuzzing.
+
+------
 
 It's easy to use:
 
@@ -14,7 +19,7 @@ print(dbg.crash_description)
 
 You will get `dbg.crash_name` like this:
 ```Bash
-PROBABLY_NOT_EXPLOITABLE_ReadAVNearNull_0x76da4b51_0x429cab36
+PROBABLY_NOT_EXPLOITABLE_ReadAVNearNull_0x76da4b51_0x429cab36.crash
 ```
 
 and `dbg.crash_description` like this:
@@ -55,7 +60,7 @@ function dbg.run 's follow_forks argument to True, and when target process is si
 
 # Versions
 
-* v0.0.4 - 2017.12.22
+* v0.0.4
   * remove psutil packages dependent.
   * add linux and mac os plan.
 * v0.0.3
@@ -68,4 +73,4 @@ function dbg.run 's follow_forks argument to True, and when target process is si
 
 ------
 
-If you want to report bugs or suggestions, please e-mail contact walkerfuz#outlook.com.
+If you want to report any bug or suggestion, please contact to walkerfuz#outlook.com.
