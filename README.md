@@ -9,6 +9,8 @@ PyDbgEng is a python wrapper of debug engines on windows, linux or osx, it's onl
 
 It's easy to use:
 
+> Python setup.py install
+
 ```Python
 from PyDbgEng.windows import *
 dbg = UserDebugger()
