@@ -9,17 +9,12 @@
 
 from .DebuggerException import *
 
-###########################################################
 class hook_container:
 
     hooks = []
-
-    ###########################################################
     def __init__ (self):
         self.hooks = []
 
-
-    ###########################################################
     def add (self, dbg, address, num_args, entry_hook=None, exit_hook=None):
         
         if (entry_hook == None and exit_hook == None):
@@ -31,8 +26,6 @@ class hook_container:
 
         self.hooks.append(h)
 
-
-###########################################################
 class hook:
 
     hooks      = None
@@ -42,7 +35,6 @@ class hook:
     exit_hook  = None
     arguments  = {}
 
-    ###########################################################
     def __init__ (self, address, num_args, entry_hook=None, exit_hook=None):
         self.address    = address
         self.num_args   = num_args
@@ -50,20 +42,17 @@ class hook:
         self.exit_hook  = exit_hook
         self.arguments  = {}
 
-
-    ###########################################################
     def hook (self, dbg):
 
         dbg.bp_set(self.address, restore=True, handler=self.__proxy_on_entry)
 
-    ###########################################################
     def __proxy_on_entry (self, dbg):
 
         tid = dbg.get_current_tid()
         
         self.arguments[tid] = []
 
-        for i in xrange(1, self.num_args + 1):
+        for i in range(1, self.num_args + 1):
             self.arguments[tid].append(dbg.get_arg(i))
 
         # if an entry point callback was specified, call it and grab the return value.
@@ -77,9 +66,7 @@ class hook:
             # set a breakpoint on the function exit.
             dbg.bp_set(function_exit, restore=False, handler=self.__proxy_on_exit)
 
-    ###########################################################
     def __proxy_on_exit (self, dbg):
-
         ret_value = dbg.get_register_value("eax")
         tid = dbg.get_current_tid()
         self.exit_hook(dbg, self.arguments[tid], ret_value)

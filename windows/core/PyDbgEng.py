@@ -10,67 +10,17 @@ from comtypes.client import CreateObject, GetEvents, ShowEvents
 from comtypes.hresult import S_OK
 from comtypes.automation import IID
 
-try:
-	from comtypes.gen import DbgEng
-except:
-	import os
-	from . import Defines
-	import comtypes
-	tlb_file = os.path.join(os.path.dirname(Defines.__file__),
-							"data", "DbgEng.tlb")
-	comtypes.client.GetModule(tlb_file)
-	
-	from comtypes.gen import DbgEng
+from comtypes.gen import DbgEng
 
 import sys,os
 import struct
 
-###########################################################
+
 # utility functions
-###########################################################
+
 BUFFER_TO_ANSI_STRING = lambda buf: buf[:buf.find("\x00")]
 BUFFER_TO_UNI_STRING  = lambda buf: buf[slice(0, buf.find("\x00\x00"), 2)]
 
-###########################################################
-class DbgEngDllFinder:
-	def get_dbg_eng_dir_from_registry():
-		import win32api, win32con
-		try:
-			hkey = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, "Software\\Microsoft\\DebuggingTools")
-		except:
-			
-			# Lets try a few common places before failing.
-			pgPaths = [
-				"c:\\",
-				os.environ["SystemDrive"]+"\\",
-				os.environ["ProgramFiles"],
-				]
-			if "ProgramW6432" in os.environ:
-				pgPaths.append(os.environ["ProgramW6432"])
-			if "ProgramFiles(x86)" in os.environ:
-				pgPaths.append(os.environ["ProgramFiles(x86)"])
-			
-			dbgPaths = [
-				"Debuggers",
-				"Debugger",
-				"Debugging Tools for Windows",
-				"Debugging Tools for Windows (x64)",
-				"Debugging Tools for Windows (x86)",
-				]
-			
-			for p in pgPaths:
-				for d in dbgPaths:
-					testPath = os.path.join(p,d)
-					
-					if os.path.exists(testPath):
-						return testPath
-			
-			raise DebuggerException("Failed to locate Microsoft Debugging Tools in the registry. Please make sure its installed")
-		val, type = win32api.RegQueryValueEx(hkey, "WinDbg")
-		return val
-	get_dbg_eng_dir_from_registry =  staticmethod(get_dbg_eng_dir_from_registry)
-
-###########################################################
 class IDebugClientCreator:
 	def create_idebug_client(dbgeng_dll):
 		# DebugCreate() prototype
@@ -88,12 +38,10 @@ class IDebugClientCreator:
 		return idebug_client
 	create_idebug_client = staticmethod(create_idebug_client)
 
-###########################################################
 class IDebugOutputCallbacksSink:
 	def Output(self, this, Mask, Text):
 		pass
 
-###########################################################
 class IDebugEventCallbacksSink:
 	def GetInterestMask(self):
 		raise DebuggerException("IDebugEventCallbacksSink.GetInterestMask() must be implemented")
@@ -137,13 +85,11 @@ class IDebugEventCallbacksSink:
 	def ChangeSymbolState(self, this, Flags, Argument):
 		pass
 
-###########################################################
 class PyDbgEng(IDebugEventCallbacksSink):
 	'''
 	base class used creating dbgeng interfaces and registring event sink.
 	client should NOT use this class directly.
 	'''
-	
 	dbghelp_dll            = None
 	dbgeng_dll             = None
 	idebug_client          = None
@@ -180,15 +126,9 @@ class PyDbgEng(IDebugEventCallbacksSink):
 		return None
 	
 	
-	###########################################################
+
 	def __init__(self, event_callbacks_sink = None, output_callbacks_sink = None, dbg_eng_dll_path = None, symbols_path = None):
 		self.dbg_eng_log = lambda msg: None # sys.stdout.write("DBGENG_LOG> " + msg + "\n")
-		#self.dbg_eng_log = lambda msg: sys.stdout.write("> " + msg + "\n")
-		
-		if (dbg_eng_dll_path == None):
-			finder = DbgEngDllFinder()
-			dbg_eng_dll_path = finder.get_dbg_eng_dir_from_registry()
-		
 		self.dbg_eng_log("PyDbgEng.__init__: got dbg_eng_dll_path %s" % dbg_eng_dll_path)
 		
 		# load dbgeng dlls
@@ -259,11 +199,10 @@ class PyDbgEng(IDebugEventCallbacksSink):
 			self.old_event_callbacks = self.idebug_client.GetEventCallbacks()
 			self.idebug_client.SetOutputCallbacks(Callbacks = output_proxy)
 	
-	###########################################################
+
 	def __del__(self):
 		self.dbg_eng_log("in PyDbgEng dtor")
 		#print "__del__"
-		
 		if self.idebug_client != None and self.old_event_callbacks != None:
 			self.idebug_client.SetEventCallbacks(self.old_event_callbacks)
 			
@@ -321,9 +260,8 @@ class PyDbgEng(IDebugEventCallbacksSink):
 				self.idebug_client = None
 
 
-	###########################################################
+
 	# IDebugEventCallbacksSink
-	###########################################################
 	def GetInterestMask(self):
 		self.event_callbacks_sink_intereset_mask = self.event_callbacks_sink.GetInterestMask()
 		return self.event_callbacks_sink_intereset_mask | DbgEng.DEBUG_EVENT_BREAKPOINT
@@ -453,15 +391,13 @@ class PyDbgEng(IDebugEventCallbacksSink):
 			
 		return DbgEng.DEBUG_STATUS_NO_CHANGE
 
-	###########################################################
+
 	# general execute commang
-	###########################################################
 	def execute(self, command):
 		self.idebug_control.Execute(DbgEng.DEBUG_OUTCTL_THIS_CLIENT, Command = command, Flags = DbgEng.DEBUG_EXECUTE_ECHO)
 
-	###########################################################
+
 	# event loops
-	###########################################################
 	def event_loop_with_user_callback(self, user_callback, user_callback_pool_interval_ms):
 		raise DebuggerException("PyDbgEng.event_loop_with_user_callback() must be implemented")
 
@@ -469,15 +405,13 @@ class PyDbgEng(IDebugEventCallbacksSink):
 		print("%%% About to throw exception: event_loop_with_quit_event %%%")
 		raise DebuggerException("PyDbgEng.event_loop_with_quit_event() must be implemented")
 
-	###########################################################
+
 	# handle functions
-	###########################################################
 	def get_handle_data(self, handle):
 		raise DebuggerException("PyDbgEng.get_handle_data() must be implemented")
 
-	###########################################################
+
 	# symbol management
-	###########################################################
 	def resolve_symbol(self, symbol):
 		return self.idebug_symbols.GetOffsetByName(symbol)
 	
@@ -495,10 +429,8 @@ class PyDbgEng(IDebugEventCallbacksSink):
 		else:
 			return symbol
 
-	###########################################################
-	# breakpoint management
-	###########################################################
 
+	# breakpoint management
 	def bp_set(self, address, preferred_id = DbgEng.DEBUG_ANY_ID, restore = True, handler = None):
 		
 		# if a list of addresses to set breakpoints on from was supplied
@@ -526,17 +458,13 @@ class PyDbgEng(IDebugEventCallbacksSink):
 		if (handler != None):
 			self.breakpoints[ bp_params.GetId() ] = handler
 
-	###########################################################
-	# image functions
-	###########################################################
 
+	# image functions
 	def read_image_nt_headers(self, image_base):
 		return self.idebug_data_spaces.ReadImageNtHeaders(image_base)
 
-	###########################################################
+
 	# cpu state functions
-	###########################################################
-	
 	def fill_register_map(self):
 		if (len(self.register_index_map) == 0):
 			# register index map
@@ -562,22 +490,18 @@ class PyDbgEng(IDebugEventCallbacksSink):
 		# todo: explore registers
 		return context_list
 	
-	###########################################################
+
 	# thread functions
-	###########################################################
 	def get_current_tid(self):
 		raise DebuggerException("PyDbgEng.get_current_tid() must be implemented")
 
-	###########################################################
+
 	# memory functions
-	###########################################################
-	
 	def read_virtual_memory(self, address, length):
 		read_buf = create_string_buffer(length)
 		bytes_read = c_ulong(0)
 		
 		self.idebug_data_spaces.ReadVirtual( address, read_buf, length, byref(bytes_read) )
-		
 		if (bytes_read.value != length):
 			raise DebuggerException("read_virtual_memory(): ReadVirtual() failed")
 		
@@ -613,9 +537,8 @@ class PyDbgEng(IDebugEventCallbacksSink):
 		return self.read_dword(esp_value + index * 4)
 
 
-	###########################################################
+
 	# stack trace functions
-	###########################################################
 	def get_stack_trace(self, frames_count):
 		frames_buffer = create_string_buffer( frames_count * sizeof(DbgEng._DEBUG_STACK_FRAME) )
 		frames_buffer_ptr = cast(frames_buffer, POINTER(DbgEng._DEBUG_STACK_FRAME))

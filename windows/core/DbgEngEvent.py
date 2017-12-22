@@ -1,38 +1,28 @@
 #! /user/bin/python
 # coding:UTF-8
 
-#
 # This file implements a callback COM object for the DbgEng.  It
 # implements the IDebugEventCallbacks interface.
-#
 # This also removes the dependency on native event proxy code and
 # works with the latest comtypes.
-#
 # Copyright (c) Michael Eddington (mike@phed.org)
-#
-# Change log:
-# 05/03/2008 - Initial version written
-# 10/08/2009 - Updated to work with comtypes >= 0.5
-#
 
-###########################################################
 # wait for event defines
-###########################################################
 INFINITE = -1
 
-###########################################################
+
 # path defines
-###########################################################
+
 MAX_PATH = 1024
 
-###########################################################
+
 # status codes
-###########################################################
+
 STRSAFE_E_INSUFFICIENT_BUFFER = -2147024774
 
-###########################################################
+
 # unicode string
-###########################################################
+
 OBJECT_ATTRIBUTES_OFFSET_TO_ROOT_HANDLE = 4
 OBJECT_ATTRIBUTES_OFFSET_TO_OBJECT_NAME = 8
 SIZE_OF_OBJECT_ATTRIBUTES = 12
@@ -42,28 +32,17 @@ UNICODE_STRING_OFFSET_TO_MAX_SIZE   = 2
 UNICODE_STRING_OFFSET_TO_BUFFER_PTR = 4
 SIZE_OF_UNICODE_STRING = 8
 
-###########################################################
 class DebuggerException(Exception):
     message = None
-    
-    ###########################################################
+
     def __init__(self, message):
         self.message = message
-        
-    ###########################################################
+
     def __str__(self):
         return self.message
 
-##
-##
-##
-
-#import logging
-#LOG_FILENAME = '/DbgEngEvent.out.txt'
-#logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
-
-import comtypes
 from ctypes import *
+import comtypes
 import comtypes.server
 import comtypes.server.connectionpoints
 from comtypes import HRESULT, COMError
@@ -256,14 +235,3 @@ class DbgEngEventCallbacks(CoClass):
 			unknown = None
 			
 		return self._pyDbgEng.ExitThread(unknown, exitCode)
-
-if __name__ == "__main__":
-    try:
-        from comtypes.server.register import UseCommandLine
-        UseCommandLine(DbgEngEventCallbacks)
-    except Exception:
-        import traceback
-        traceback.print_exc()
-        raw_input()
-
-# end

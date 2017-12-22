@@ -11,37 +11,26 @@ from comtypes.gen import DbgEng
 import threading
 from multiprocessing import *
 
-
-###########################################################
 class KernelAttacher(PyDbgEng):
     '''
     used for kernel mode debugging.
     '''
-
     force_quit_flag   = None
     is_deleted        = False
-    
-    ###########################################################
+
     class QuitEventWaiter(threading.Thread):
     
         quit_event     = None
         abort_event    = None
         top            = None
-        
-        ###########################################################
-        def __init__(self, quit_event, abort_event, top):
 
-            
+        def __init__(self, quit_event, abort_event, top):
             self.quit_event = quit_event
             self.abort_event = abort_event
-
-
-
             self.top = top
             threading.Thread.__init__(self, target = self.wait_for_quit_event)
             threading.Thread.start(self)
-            
-        ###########################################################
+
         def wait_for_quit_event(self):
             self.top.dbg_eng_log("QuitEventWaiter.wait_for_quit_event: begin")
             
@@ -54,7 +43,6 @@ class KernelAttacher(PyDbgEng):
                     break
             self.top.dbg_eng_log("QuitEventWaiter.wait_for_quit_event: done")
 
-    ###########################################################
     def __init__(self, connection_string, set_initial_bp = True, event_callbacks_sink = None, output_callbacks_sink = None, dbg_eng_dll_path = None, symbols_path = None):
         PyDbgEng.__init__(self, event_callbacks_sink, output_callbacks_sink, dbg_eng_dll_path, symbols_path)
 
@@ -72,7 +60,6 @@ class KernelAttacher(PyDbgEng):
         self.dbg_eng_log("KernelAttacher.__init__: about to attach to kernel with connection string %s" % connection_string)
         self.idebug_client.AttachKernel(ConnectOptions = connection_string, Flags = DbgEng.DEBUG_ATTACH_KERNEL_CONNECTION)
 
-    ###########################################################
     def __del__(self):
         if (not self.is_deleted):
             PyDbgEng.__del__(self)
@@ -87,34 +74,25 @@ class KernelAttacher(PyDbgEng):
                 self.dbgeng_dll = None
             
             self.is_deleted = True
-        
-        
-    ###########################################################
+
     # event loop
-    ###########################################################
-    
-    ###########################################################
     def event_loop_with_quit_event(self, quit_event):
         '''
         in kernel debugging session IDebugControl.WaitForEvent() must be called with an 'infinite' timeout value.
         this is why we have to create thread that checks the given given quit event. once set it will force a debugger
         break.
         '''
-
-        
         if (self.is_deleted):
             raise DebuggerException("called when object is deleted")
 
-        
         # sanity check on quit_event
         #if (not isinstance(quit_event, threading._Event)):
         #   raise DebuggerException("invalid type for quit event")
-        
         # is already set?
         if (quit_event.is_set()):
             # no job for us
             return
-        
+
         # create abort event
         abort_quit_waiter_event = Event()
         
@@ -132,7 +110,6 @@ class KernelAttacher(PyDbgEng):
         # dont wait for garbage collection, and force delete on self
         self.__del__()
 
-    ###########################################################
     def __event_loop_with_forced_break_check(self, quit_event):
         while(True):
             try:            
@@ -160,8 +137,6 @@ class KernelAttacher(PyDbgEng):
                 # some other error - re throw
                 raise
 
-    ###########################################################
     # thread functions
-    ###########################################################
     def get_current_tid(self):
         return 0

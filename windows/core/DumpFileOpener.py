@@ -8,13 +8,10 @@ from .PyDbgEng           import *
 from ctypes import *
 from comtypes.gen import DbgEng
 
-###########################################################
 class DumpFileOpener(PyDbgEng):
     '''
     open crash dump file
     '''
-
-    ###########################################################
     def __init__(self, dump_file, event_callbacks_sink = None, output_callbacks_sink = None, dbg_eng_dll_path = None, symbols_path = None):
         PyDbgEng.__init__(self, event_callbacks_sink, output_callbacks_sink, dbg_eng_dll_path, symbols_path)
 
