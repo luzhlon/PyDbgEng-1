@@ -1,6 +1,8 @@
 import os
 from ctypes import *
 import comtypes
+
+from .core import *
 from .DebugEventHandler import *
 
 class UserDebugger:
@@ -31,21 +33,15 @@ class UserDebugger:
 
     def run(self, proc_args, follow_forks=True):
         proc_args = proc_args.encode("ascii", "ignore")
-        try:
-            self.event_handler.follow_forks = follow_forks
-            self.dbg = ProcessCreator(command_line = proc_args,
-                follow_forks = follow_forks,
-                event_callbacks_sink = self.event_handler,
-                output_callbacks_sink = self.event_handler,
-                # symbols_path = SymbolsPath,
-                dbg_eng_dll_path = self.p)
-            self.event_handler.dbg = self.dbg
-            self.started.set()
-            self.dbg.event_loop_with_quit_event(self.quit)
-            # when event handler loop is over
-            self.crash_name = self.event_handler.crash_name
-            self.crash_description = self.event_handler.crash_description
-            return True
-        except Exception as E:
-            print("[Error]: Something is wrong because of {}.".format(E))
-            return False
+        self.event_handler.follow_forks = follow_forks
+        self.dbg = ProcessCreator(command_line = proc_args,
+            follow_forks = follow_forks,
+            event_callbacks_sink = self.event_handler,
+            output_callbacks_sink = self.event_handler,
+            dbg_eng_dll_path = self.p)# symbols_path = SymbolsPath
+        self.event_handler.dbg = self.dbg
+        self.started.set()
+        self.dbg.event_loop_with_quit_event(self.quit)
+        # when event handler loop is over
+        self.crash_name = self.event_handler.crash_name
+        self.crash_description = self.event_handler.crash_description

@@ -7,5 +7,6 @@ setup(
     version="0.0.4",
     description='A python wrapper of debug engines on windows, linux or osx.',
     author='WalkerFuz',
-    packages = find_packages()
+    packages=find_packages(),
+    include_package_data=True,
 )
