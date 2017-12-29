@@ -1,8 +1,3 @@
-import os
-from ctypes import *
-import comtypes
-
-from .core import *
 from .DebugEventHandler import *
 
 class UserDebugger:

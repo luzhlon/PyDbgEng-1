@@ -1,13 +1,5 @@
-#! /user/bin/python
-# coding:UTF-8
-
-from .Defines            import *
-from .DebuggerException  import *
-from .PyDbgEng           import PyDbgEng
-from .UserModeSession    import *
-
-from ctypes import *
 from comtypes.gen import DbgEng
+from .UserModeSession import *
 
 class ProcessCreator(UserModeSession):
     '''
@@ -22,7 +14,6 @@ class ProcessCreator(UserModeSession):
             creation_flags = DbgEng.DEBUG_PROCESS
         else:
             creation_flags = DbgEng.DEBUG_ONLY_THIS_PROCESS
-
         # create debuggee process
-        self.dbg_eng_log("ProcessCreator.__init__: about to create process with command line '%s'" % command_line)
-        self.idebug_client.CreateProcess(Server=UserModeSession.NO_PROCESS_SERVER, CommandLine = command_line, CreateFlags = creation_flags)
+        self.idebug_client.CreateProcess(Server=UserModeSession.NO_PROCESS_SERVER,
+                        CommandLine = command_line, CreateFlags = creation_flags)

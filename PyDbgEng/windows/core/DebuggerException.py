@@ -1,6 +1,3 @@
-#! /user/bin/python
-# coding:UTF-8
-
 class DebuggerException(Exception):
     message = None
 

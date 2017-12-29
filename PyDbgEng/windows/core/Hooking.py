@@ -1,12 +1,3 @@
-#! /user/bin/python
-# coding:UTF-8
-
-#
-# API Hooking Abstraction Helper
-# Inspired by hooking.py in PaiMei. Copyright (C) 2006 Pedram Amini <pedram.amini@gmail.com>
-# Re-written to support dbgEng interface.
-#
-
 from .DebuggerException import *
 
 class hook_container:
@@ -43,15 +34,11 @@ class hook:
         self.arguments  = {}
 
     def hook (self, dbg):
-
         dbg.bp_set(self.address, restore=True, handler=self.__proxy_on_entry)
 
     def __proxy_on_entry (self, dbg):
-
         tid = dbg.get_current_tid()
-        
         self.arguments[tid] = []
-
         for i in range(1, self.num_args + 1):
             self.arguments[tid].append(dbg.get_arg(i))
 

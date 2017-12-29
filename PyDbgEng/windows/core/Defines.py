@@ -1,12 +1,8 @@
-#! /user/bin/python
-# coding:UTF-8
-
 # wait for event defines
 INFINITE = -1
 
 # path defines
 MAX_PATH = 1024
-
 # status codes
 STRSAFE_E_INSUFFICIENT_BUFFER = -2147024774
 

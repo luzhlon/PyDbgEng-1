@@ -1,15 +1,9 @@
-#! /user/bin/python
-# coding:UTF-8
-
-from .Defines            import *
-from .DebuggerException  import *
-from .PyDbgEng           import *
-
-from ctypes import *
-from comtypes.gen import DbgEng
 import sys
-
-import threading
+from ctypes import *
+from .PyDbgEng import *
+from comtypes.gen import DbgEng
+from .Defines import *
+from .DebuggerException import *
 
 class UserModeSession(PyDbgEng):
     '''
@@ -17,9 +11,7 @@ class UserModeSession(PyDbgEng):
     INFINITE timeout.
     client should NOT use this class directly.
     '''
-
     NO_PROCESS_SERVER = 0
-
     # event loop
     def wait_for_event(self, timeout_ms):
         try:
@@ -27,39 +19,30 @@ class UserModeSession(PyDbgEng):
             return True
         except COMError as e:
             status = self.idebug_control.GetExecutionStatus()
-            self.dbg_eng_log("UserModeSession.wait_for_event: except with status %d" % status)
-            
+
             # debuggee terminated?
             if (status == DbgEng.DEBUG_STATUS_NO_DEBUGGEE):
                 # ok, no harm done. leave the function.
-                self.dbg_eng_log("UserModeSession.wait_for_event: wait_for_event returned with DEBUG_STATUS_NO_DEBUGGEE. leaving.")
                 return False
-            
             # some other error - re throw
             raise
 
     def event_loop_with_user_callback(self, user_callback, user_callback_pool_interval_ms):
         if (user_callback_pool_interval_ms <= 0):
             raise DebuggerException("UserModeSession.event_loop_with_user_callback(): invalid user_callback_pool_interval_ms")
-            
         while (True):
             if (self.wait_for_event(user_callback_pool_interval_ms) == False):
-                self.dbg_eng_log("UserModeSession.event_loop_with_user_callback: wait_for_event() done. breaking loop.")
                 break
-
             # call user callback
             if (user_callback(self) == True):
                 # user requested to quit event loop
-                self.dbg_eng_log("UserModeSession.event_loop_with_user_callback: user callback returned true. breaking loop.")
                 break
 
     def event_loop_with_quit_event(self, quit_event):
         #if (not isinstance(quit_event, threading._Event)):
         #    raise DebuggerException("UserModeSession.event_loop_with_quit_event(): invalid quit_event")
-            
         while (not quit_event.is_set()):
             if (self.wait_for_event(200) == False):
-                self.dbg_eng_log("UserModeSession.event_loop_with_quit_event: wait_for_event() done. breaking loop.")
                 break
 
     # handle functions

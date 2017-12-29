@@ -1,77 +1,107 @@
-# PyDbgEng
+# PyDbgEng - Debugger for fuzzing.
 
 [![](https://img.shields.io/github/forks/walkerfuz/PyDbgEng.svg)](https://github.com/walkerfuz/PyDbgEng/network) 
 [![](https://img.shields.io/github/stars/walkerfuz/PyDbgEng.svg)](https://github.com/walkerfuz/PyDbgEng/stargazers)
 
-PyDbgEng is a python wrapper of debug engines on windows, linux or osx, it's only aim to auto fuzzing.
+PyDbgEng is a python wrapper of debugger engines on windows, linux or osx, it's only aim to auto fuzzing.
 
-------
+## Usages
 
 It's easy to use:
-
-> Python setup.py install
 
 ```Python
 from PyDbgEng.windows import *
 dbg = UserDebugger()
-dbg.run("C:/Program Files (x86)/Internet Explorer/iexplore.exe")
+dbg.run("C:/Program Files/Internet Explorer/iexplore.exe http://127.0.0.1/fuzz")
+# after process is crashed or terminated
 print(dbg.crash_name)
 print(dbg.crash_description)
 ```
 
 You will get `dbg.crash_name` like this:
 ```Bash
-PROBABLY_NOT_EXPLOITABLE_ReadAVNearNull_0x76da4b51_0x429cab36.crash
+EXPLOITABLE_WriteAV_0x1b75c019_0xb5221dd3.crash
 ```
 
 and `dbg.crash_description` like this:
 ```Bash
-> r
-rax=000061bee3327a7a rbx=0000000000000000 rcx=0000000005c99dc0
-rdx=0000000005c99db0 rsi=000000000b05ed08 rdi=0000000005c99dc0
-rip=000007feee0f07dd rsp=0000000005c99ca0 rbp=0000000005c99d10
-cs=0033  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00010246
-MSHTML!CreateCoreWebView+0x7074d:
-000007fe`ee0f07dd 4439b39c000000  cmp     dword ptr [rbx+9Ch],r14d ds:00000000`0000009c=????????
-> !exploitable -m
-INSTRUCTION_ADDRESS:0x000007fabd1c96e1
+|
+   0	id: 2b8	create	name: iexplore.exe
+.  1	id: 7a8	child	name: iexplore.exe
+r
+*** ERROR: Symbol file could not be found.  Defaulted to export symbols for C:\Windows\System32\jscript.dll - 
+rax=0000000000000000 rbx=0000000000000000 rcx=000000000000fffb
+rdx=0000000000000005 rsi=000000000720b068 rdi=000000000720afb8
+rip=000007fef04019b9 rsp=000000000720ae30 rbp=0000000004d7af90
+ r8=0000000000000000  r9=0000000004da2670 r10=0000000000000081
+r11=000000000720ae10 r12=0000000000000000 r13=0000000000000001
+r14=0000000004cdcb10 r15=000000000720af00
+iopl=0         nv up ei pl nz na pe nc
+cs=0033  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00010202
+jscript!DllUnregisterServer+0x1e049:
+000007fe`f04019b9 66214d30        and     word ptr [rbp+30h],cx ss:00000000`04d7afc0=????
+
+.load C:\code\PyDbgEng-master\PyDbgEng\windows\utils\x64\MSEC.dll
+!exploitable -m
+VERSION:1.6.0.0
+IDENTITY:HostMachine\HostUser
+PROCESSOR:X64
+CLASS:USER
+QUALIFIER:USER_PROCESS
+EVENT:DEBUG_EVENT_EXCEPTION
+......
+EXCEPTION_FAULTING_ADDRESS:0x4d7afc0
+EXCEPTION_CODE:0xC0000005
+EXCEPTION_LEVEL:FIRST_CHANCE
+EXCEPTION_TYPE:STATUS_ACCESS_VIOLATION
+EXCEPTION_SUBTYPE:WRITE
+FAULTING_INSTRUCTION:000007fe`f04019b9 and word ptr [rbp+30h],cx
+MAJOR_HASH:0x1b75c019
+MINOR_HASH:0xb5221dd3
+STACK_DEPTH:32
+STACK_FRAME:jscript!DllUnregisterServer+0x1e049
+STACK_FRAME:jscript!DllUnregisterServer+0x28f46
+......
+INSTRUCTION_ADDRESS:0x000007fef04019b9
 INVOKING_STACK_FRAME:0
-DESCRIPTION:Read Access Violation near NULL
-SHORT_DESCRIPTION:ReadAVNearNull
-CLASSIFICATION:PROBABLY_NOT_EXPLOITABLE
-BUG_TITLE:Read Access Violation near NULL starting at MSHTML!DllCanUnloadNow+0x01
-Hash=0x76da4b51.0x429cab36
-EXPLANATION:This is a user mode read access violation near null, and is probably not exploitable.
+DESCRIPTION:User Mode Write AV
+SHORT_DESCRIPTION:WriteAV
+CLASSIFICATION:EXPLOITABLE
+BUG_TITLE:Exploitable - User Mode Write AV starting at jscript!DllUnregisterServer+0x000000000001e049 (Hash=0x1b75c019.0xb5221dd3)
+EXPLANATION:User mode write access violations that are not near NULL are exploitable.
 ```
 
-# Features
+if debugged process is terminated, `dbg.crash_name` and `dbg.crash_description` will set to None.
+
+## Features
 
 * The automated monitoring module specially developed for Fuzzing.
 * Support Exploitable plugin to determine the crash is exploitable or not.
 * Support for Windows, linux and Mac OS.
 
-# Requirements
+## Requirements
+
+### windows
+
+`Warning`: Because of using MSEC.dll to check crash exploit or not, `Visual C++ Redistributable for Visual Studio 2012` should be installed first.
 
 * Required
+	* python3
 	* comtypes
 
-# Attentions
+### install
 
-When target process is multiprocess like chrome and IE, you should set 
-function dbg.run 's follow_forks argument to True, and when target process is singleprocess like firefox, you should set follow_forks to False whick is equal to Singleprocess.
+0. download visual Redistributable 2012 and setup.
+1. pip install comtypes.
+2. download PyDbgEng and run python setup.py install.
 
-# Versions
+## Versions
+The current version is `v0.0.5`, PyDbgEng can run in windows currectly:
 
-* v0.0.4
-  * remove psutil packages dependent.
-  * add linux and mac os plan.
-* v0.0.3
-	* fix bugs when process is singleprocess or multiprocess.
-* v0.0.2
-	* fix bugs when comtypes.gen isn't exist.
-	* add Visual C++ Redistributable 2012 setup to install steps.
-* v0.0.1
-	* change pydbgeng for python 3.x.
+  * fix bug when comtypes.gen isn't exist.
+  * fix bug when killing debugged process and child process.
+
+details [here](https://github.com/walkerfuz/PyDbgEng/blob/master/version.md).
 
 ------
 

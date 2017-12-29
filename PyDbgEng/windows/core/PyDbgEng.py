@@ -1,23 +1,24 @@
-#! /user/bin/python
-# coding:UTF-8
-
+import struct
 from .Defines import *
 from .DebuggerException import *
 
 from ctypes import *
-from comtypes import HRESULT, COMError
-from comtypes.client import CreateObject, GetEvents, ShowEvents
+from comtypes import *
+from comtypes.client import CreateObject
 from comtypes.hresult import S_OK
 from comtypes.automation import IID
 
-from comtypes.gen import DbgEng
+try:
+    from comtypes.gen import DbgEng
+except ImportError:
+    import comtypes
+    tlb = os.path.join(os.path.dirname(__file__), "..", "utils", "DbgEng.tlb")
+    comtypes.client.GetModule(tlb)
+    from comtypes.gen import DbgEng
 
-import sys,os
-import struct
 
 
 # utility functions
-
 BUFFER_TO_ANSI_STRING = lambda buf: buf[:buf.find("\x00")]
 BUFFER_TO_UNI_STRING  = lambda buf: buf[slice(0, buf.find("\x00\x00"), 2)]
 
@@ -98,20 +99,13 @@ class PyDbgEng(IDebugEventCallbacksSink):
 	idebug_registers       = None
 	idebug_symbols         = None
 	idebug_system_objects  = None
-	
 	event_proxy_creator    = None
 	output_proxy_creator   = None
-	
 	old_event_callbacks    = None
 	old_output_callbacks   = None
-	
 	event_callbacks_sink   = None
 	event_callbacks_sink_intereset_mask = 0
-	
-	dbg_eng_log            = None
-	
-	breakpoints            = {}       
-	
+	breakpoints            = {}
 	register_index_map     = {}
 	
 	def findDbgEngEvent(self):
@@ -128,16 +122,11 @@ class PyDbgEng(IDebugEventCallbacksSink):
 	
 
 	def __init__(self, event_callbacks_sink = None, output_callbacks_sink = None, dbg_eng_dll_path = None, symbols_path = None):
-		self.dbg_eng_log = lambda msg: None # sys.stdout.write("DBGENG_LOG> " + msg + "\n")
-		self.dbg_eng_log("PyDbgEng.__init__: got dbg_eng_dll_path %s" % dbg_eng_dll_path)
-		
 		# load dbgeng dlls
-		self.dbg_eng_log("PyDbgEng.__init__: loading dbgeng dlls")
 		self.dbghelp_dll = windll.LoadLibrary(dbg_eng_dll_path + "\\dbghelp.dll")
 		self.dbgeng_dll = windll.LoadLibrary(dbg_eng_dll_path + "\\dbgeng.dll")
 		
 		# create main interfaces
-		self.dbg_eng_log("PyDbgEng.__init__: creating interfaces")
 		creator = IDebugClientCreator()
 		
 		try:
@@ -165,8 +154,6 @@ class PyDbgEng(IDebugEventCallbacksSink):
 				raise DebuggerException("Invalid sink object (event_callbacks_sink)")
 			
 			self.event_callbacks_sink = event_callbacks_sink
-			self.dbg_eng_log("PyDbgEng.__init__: registering event callbacks proxy")
-			
 			# Updated code to work with latest comtypes and remove native code needs
 			# Eddington 5/3/2008
 			PyDbgEng.fuzzyWuzzy = self	# HACK!
@@ -184,8 +171,7 @@ class PyDbgEng(IDebugEventCallbacksSink):
 			# sanity check on sink
 			if (not isinstance(output_callbacks_sink, IDebugOutputCallbacksSink)):
 				raise DebuggerException("Invalid sink object (output_callbacks_sink)")
-			self.dbg_eng_log("PyDbgEng.__init__: registering output callbacks proxy")
-			
+
 			# Updated code to work with latest comtypes and remove native code needs
 			# Eddington 5/3/2008
 			PyDbgEng.fuzzyWuzzy = self	# HACK!
@@ -201,7 +187,6 @@ class PyDbgEng(IDebugEventCallbacksSink):
 	
 
 	def __del__(self):
-		self.dbg_eng_log("in PyDbgEng dtor")
 		#print "__del__"
 		if self.idebug_client != None and self.old_event_callbacks != None:
 			self.idebug_client.SetEventCallbacks(self.old_event_callbacks)
@@ -444,8 +429,6 @@ class PyDbgEng(IDebugEventCallbacksSink):
 
 		if type(address) is str:
 			address = self.resolve_symbol(address)
-		
-		self.dbg_eng_log("PyDbgEng.bp_set: setting bp at address %xL" % address)
 
 		# its so easy, it should be illegal...
 		bp_params = self.idebug_control.AddBreakpoint(Type = DbgEng.DEBUG_BREAKPOINT_CODE, DesiredId = preferred_id)
