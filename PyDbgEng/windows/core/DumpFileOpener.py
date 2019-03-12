@@ -23,3 +23,6 @@ class DumpFileOpener(PyDbgEng):
         # caused the dump.  This will return immediately as the
         # dump file is considered to be at its event.
         self.idebug_control.WaitForEvent(DbgEng.DEBUG_WAIT_DEFAULT, INFINITE)
+
+    def dbg_eng_log(self, log):
+        pass
